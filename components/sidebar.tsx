@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Package, FileText, Printer, LayoutDashboard } from "lucide-react"
+import { Package, FileText, Printer, LayoutDashboard, FolderOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const menuItems = [
@@ -15,6 +15,11 @@ const menuItems = [
     title: "Productos",
     href: "/products",
     icon: Package,
+  },
+  {
+    title: "Categorías",
+    href: "/categories",
+    icon: FolderOpen,
   },
   {
     title: "Facturación",

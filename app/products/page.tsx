@@ -19,11 +19,12 @@ import type { Product } from "@/lib/types"
 
 export default function ProductsPage() {
   const { products, loading, error, createProduct, updateProduct, deleteProduct, fetchProducts } = useProducts()
-  const { categories } = useCategories()
+  const { categories, createCategory, fetchCategories } = useCategories()
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isQuickCategoryOpen, setIsQuickCategoryOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -36,6 +37,11 @@ export default function ProductsPage() {
     stock: "",
     categoryId: "",
     imageUrl: "",
+  })
+
+  const [categoryFormData, setCategoryFormData] = useState({
+    name: "",
+    description: "",
   })
 
   useEffect(() => {
@@ -166,6 +172,38 @@ export default function ProductsPage() {
     setIsEditOpen(true)
   }
 
+  const handleQuickCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+
+    try {
+      const newCategory = await createCategory({
+        name: categoryFormData.name,
+        description: categoryFormData.description || undefined,
+      })
+
+      toast({
+        title: "Éxito",
+        description: "Categoría creada correctamente",
+      })
+
+      // Seleccionar automáticamente la nueva categoría
+      setFormData({ ...formData, categoryId: newCategory.id })
+      
+      setIsQuickCategoryOpen(false)
+      setCategoryFormData({ name: "", description: "" })
+      await fetchCategories()
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "No se pudo crear la categoría",
+        variant: "destructive",
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   if (error) {
     return (
       <div className="p-8">
@@ -224,17 +262,35 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="category">Categoría</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="category">Categoría</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsQuickCategoryOpen(true)}
+                      className="h-auto py-1 px-2 text-xs"
+                    >
+                      <Plus className="mr-1 h-3 w-3" />
+                      Nueva
+                    </Button>
+                  </div>
                   <Select value={formData.categoryId} onValueChange={(value) => setFormData({ ...formData, categoryId: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecciona una categoría" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
+                      {categories.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          No hay categorías. Crea una nueva.
+                        </div>
+                      ) : (
+                        categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -372,17 +428,35 @@ export default function ProductsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-category">Categoría</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="edit-category">Categoría</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsQuickCategoryOpen(true)}
+                    className="h-auto py-1 px-2 text-xs"
+                  >
+                    <Plus className="mr-1 h-3 w-3" />
+                    Nueva
+                  </Button>
+                </div>
                 <Select value={formData.categoryId} onValueChange={(value) => setFormData({ ...formData, categoryId: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona una categoría" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
+                    {categories.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        No hay categorías. Crea una nueva.
+                      </div>
+                    ) : (
+                      categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -412,6 +486,46 @@ export default function ProductsPage() {
               </Button>
               <Button type="submit" disabled={submitting}>
                 {submitting ? "Actualizando..." : "Actualizar Producto"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Creación Rápida de Categoría */}
+      <Dialog open={isQuickCategoryOpen} onOpenChange={setIsQuickCategoryOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Crear Nueva Categoría</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleQuickCreateCategory} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="quick-category-name">Nombre *</Label>
+              <Input
+                id="quick-category-name"
+                value={categoryFormData.name}
+                onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+                placeholder="Ej: Decoración, Muebles..."
+                required
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quick-category-description">Descripción</Label>
+              <Textarea
+                id="quick-category-description"
+                value={categoryFormData.description}
+                onChange={(e) => setCategoryFormData({ ...categoryFormData, description: e.target.value })}
+                placeholder="Descripción de la categoría (opcional)"
+                rows={2}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setIsQuickCategoryOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? "Creando..." : "Crear"}
               </Button>
             </div>
           </form>
