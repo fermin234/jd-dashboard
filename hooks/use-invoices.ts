@@ -88,14 +88,9 @@ export function useInvoices() {
   const updateInvoice = async (id: string, data: UpdateInvoiceDto) => {
     try {
       const updatedInvoice = await invoicesService.update(id, data)
-      const invoiceWithParsedPrices = {
-        ...updatedInvoice,
-        subtotal: typeof updatedInvoice.subtotal === 'string' ? parseFloat(updatedInvoice.subtotal) : updatedInvoice.subtotal,
-        tax: typeof updatedInvoice.tax === 'string' ? parseFloat(updatedInvoice.tax) : updatedInvoice.tax,
-        total: typeof updatedInvoice.total === 'string' ? parseFloat(updatedInvoice.total) : updatedInvoice.total,
-      }
-      setInvoices(invoices.map(i => i.id === id ? { ...i, ...invoiceWithParsedPrices } : i))
-      return invoiceWithParsedPrices
+      // Recargar todas las facturas para asegurar que el estado esté sincronizado
+      await fetchInvoices()
+      return updatedInvoice
     } catch (err: any) {
       setError(err.message || 'Error al actualizar la factura')
       throw err
@@ -105,14 +100,9 @@ export function useInvoices() {
   const completeInvoice = async (id: string) => {
     try {
       const completedInvoice = await invoicesService.complete(id)
-      const invoiceWithParsedPrices = {
-        ...completedInvoice,
-        subtotal: typeof completedInvoice.subtotal === 'string' ? parseFloat(completedInvoice.subtotal) : completedInvoice.subtotal,
-        tax: typeof completedInvoice.tax === 'string' ? parseFloat(completedInvoice.tax) : completedInvoice.tax,
-        total: typeof completedInvoice.total === 'string' ? parseFloat(completedInvoice.total) : completedInvoice.total,
-      }
-      setInvoices(invoices.map(i => i.id === id ? { ...i, ...invoiceWithParsedPrices } : i))
-      return invoiceWithParsedPrices
+      // Recargar todas las facturas para asegurar que el estado esté sincronizado
+      await fetchInvoices()
+      return completedInvoice
     } catch (err: any) {
       setError(err.message || 'Error al completar la factura')
       throw err
@@ -122,14 +112,9 @@ export function useInvoices() {
   const cancelInvoice = async (id: string) => {
     try {
       const cancelledInvoice = await invoicesService.cancel(id)
-      const invoiceWithParsedPrices = {
-        ...cancelledInvoice,
-        subtotal: typeof cancelledInvoice.subtotal === 'string' ? parseFloat(cancelledInvoice.subtotal) : cancelledInvoice.subtotal,
-        tax: typeof cancelledInvoice.tax === 'string' ? parseFloat(cancelledInvoice.tax) : cancelledInvoice.tax,
-        total: typeof cancelledInvoice.total === 'string' ? parseFloat(cancelledInvoice.total) : cancelledInvoice.total,
-      }
-      setInvoices(invoices.map(i => i.id === id ? { ...i, ...invoiceWithParsedPrices } : i))
-      return invoiceWithParsedPrices
+      // Recargar todas las facturas para asegurar que el estado esté sincronizado
+      await fetchInvoices()
+      return cancelledInvoice
     } catch (err: any) {
       setError(err.message || 'Error al cancelar la factura')
       throw err
