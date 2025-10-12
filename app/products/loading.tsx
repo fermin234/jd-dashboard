@@ -1,3 +1,3 @@
 export default function Loading() {
-  return null
+  return <div className="p-8">Cargando productos...</div>
 }
