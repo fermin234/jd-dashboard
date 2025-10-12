@@ -129,84 +129,105 @@ export default function InvoicesListPage() {
       </Card>
 
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Detalle de Factura</DialogTitle>
+            <DialogTitle>Vista Previa de Factura</DialogTitle>
           </DialogHeader>
           {selectedInvoice && (
             <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">Número de Factura</p>
-                  <p className="font-mono font-medium">{selectedInvoice.invoiceNumber}</p>
+              {/* Vista previa con el mismo formato de impresión */}
+              <div className="border-2 border-border rounded-lg p-8 bg-white">
+                {/* Encabezado de la Empresa */}
+                <div className="text-center mb-8 border-b-2 border-black pb-4">
+                  <h1 className="text-3xl font-bold">Juanita Deco</h1>
+                  <p className="text-sm mt-1">Artículos de Decoración</p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Fecha</p>
-                  <p className="font-medium">{new Date(selectedInvoice.createdAt).toLocaleString()}</p>
+
+                {/* Información de la Factura */}
+                <div className="grid grid-cols-2 gap-8 mb-6">
+                  <div>
+                    <h2 className="font-bold text-lg mb-2">FACTURA</h2>
+                    <p className="text-sm"><strong>Número:</strong> {selectedInvoice.invoiceNumber}</p>
+                    <p className="text-sm"><strong>Fecha:</strong> {new Date(selectedInvoice.createdAt).toLocaleString('es-ES', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</p>
+                    <div className="mt-2">
+                      <strong className="text-sm">Estado: </strong>
+                      {getStatusBadge(selectedInvoice.status)}
+                    </div>
+                  </div>
+                  
+                  {(selectedInvoice.customerName || selectedInvoice.customerPhone || selectedInvoice.customerEmail) && (
+                    <div className="text-right">
+                      <h3 className="font-bold mb-2">CLIENTE</h3>
+                      {selectedInvoice.customerName && (
+                        <p className="text-sm"><strong>Nombre:</strong> {selectedInvoice.customerName}</p>
+                      )}
+                      {selectedInvoice.customerPhone && (
+                        <p className="text-sm"><strong>Teléfono:</strong> {selectedInvoice.customerPhone}</p>
+                      )}
+                      {selectedInvoice.customerEmail && (
+                        <p className="text-sm"><strong>Email:</strong> {selectedInvoice.customerEmail}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Estado</p>
-                  {getStatusBadge(selectedInvoice.status)}
+
+                {/* Tabla de Productos */}
+                <table className="w-full mb-6 border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-black">
+                      <th className="text-left py-2 px-2">Producto</th>
+                      <th className="text-center py-2 px-2">Cantidad</th>
+                      <th className="text-right py-2 px-2">Precio Unit.</th>
+                      <th className="text-right py-2 px-2">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedInvoice.items.map((item) => (
+                      <tr key={item.id} className="border-b">
+                        <td className="py-2 px-2">{item.product?.name || 'Producto'}</td>
+                        <td className="text-center py-2 px-2">{item.quantity}</td>
+                        <td className="text-right py-2 px-2">${item.unitPrice.toFixed(2)}</td>
+                        <td className="text-right py-2 px-2 font-semibold">${item.subtotal.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Totales */}
+                <div className="flex justify-end mb-6">
+                  <div className="w-64">
+                    <div className="flex justify-between py-1 text-sm">
+                      <span>Subtotal:</span>
+                      <span>${selectedInvoice.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-sm">
+                      <span>IVA (16%):</span>
+                      <span>${selectedInvoice.tax.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-t-2 border-black font-bold text-lg">
+                      <span>TOTAL:</span>
+                      <span>${selectedInvoice.total.toFixed(2)}</span>
+                    </div>
+                  </div>
                 </div>
-                {selectedInvoice.customerName && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Cliente</p>
-                    <p className="font-medium">{selectedInvoice.customerName}</p>
-                  </div>
-                )}
-                {selectedInvoice.customerPhone && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Teléfono</p>
-                    <p className="font-medium">{selectedInvoice.customerPhone}</p>
-                  </div>
-                )}
-                {selectedInvoice.customerEmail && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{selectedInvoice.customerEmail}</p>
-                  </div>
-                )}
+
+                {/* Notas */}
                 {selectedInvoice.notes && (
-                  <div className="md:col-span-2">
-                    <p className="text-sm text-muted-foreground">Notas</p>
-                    <p className="font-medium">{selectedInvoice.notes}</p>
+                  <div className="mb-6 p-3 bg-gray-50 border border-gray-300">
+                    <p className="text-sm"><strong>Notas:</strong> {selectedInvoice.notes}</p>
                   </div>
                 )}
-              </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Producto</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Precio Unit.</TableHead>
-                    <TableHead>Subtotal</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {selectedInvoice.items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.product?.name || 'Producto'}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>${item.unitPrice.toFixed(2)}</TableCell>
-                      <TableCell>${item.subtotal.toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              <div className="space-y-2 border-t border-border pt-4">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>${selectedInvoice.subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>IVA:</span>
-                  <span>${selectedInvoice.tax.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total:</span>
-                  <span>${selectedInvoice.total.toFixed(2)}</span>
+                {/* Pie de Página */}
+                <div className="text-center text-sm border-t pt-4 mt-8">
+                  <p>¡Gracias por su compra!</p>
+                  <p className="text-xs mt-2 text-gray-600">Esta factura fue generada electrónicamente</p>
                 </div>
               </div>
 
@@ -223,6 +244,124 @@ export default function InvoicesListPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Factura para Imprimir (oculta en pantalla, visible en impresión) */}
+      {selectedInvoice && (
+        <div className="print-invoice-list hidden print:block fixed inset-0 bg-white z-50">
+          <div className="max-w-4xl mx-auto p-8">
+            {/* Encabezado de la Empresa */}
+            <div className="text-center mb-8 border-b-2 border-black pb-4">
+              <h1 className="text-3xl font-bold">Juanita Deco</h1>
+              <p className="text-sm mt-1">Artículos de Decoración</p>
+            </div>
+
+            {/* Información de la Factura */}
+            <div className="grid grid-cols-2 gap-8 mb-6">
+              <div>
+                <h2 className="font-bold text-lg mb-2">FACTURA</h2>
+                <p className="text-sm"><strong>Número:</strong> {selectedInvoice.invoiceNumber}</p>
+                <p className="text-sm"><strong>Fecha:</strong> {new Date(selectedInvoice.createdAt).toLocaleString('es-ES', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</p>
+              </div>
+              
+              {(selectedInvoice.customerName || selectedInvoice.customerPhone || selectedInvoice.customerEmail) && (
+                <div className="text-right">
+                  <h3 className="font-bold mb-2">CLIENTE</h3>
+                  {selectedInvoice.customerName && (
+                    <p className="text-sm"><strong>Nombre:</strong> {selectedInvoice.customerName}</p>
+                  )}
+                  {selectedInvoice.customerPhone && (
+                    <p className="text-sm"><strong>Teléfono:</strong> {selectedInvoice.customerPhone}</p>
+                  )}
+                  {selectedInvoice.customerEmail && (
+                    <p className="text-sm"><strong>Email:</strong> {selectedInvoice.customerEmail}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Tabla de Productos */}
+            <table className="w-full mb-6 border-collapse">
+              <thead>
+                <tr className="border-b-2 border-black">
+                  <th className="text-left py-2 px-2">Producto</th>
+                  <th className="text-center py-2 px-2">Cantidad</th>
+                  <th className="text-right py-2 px-2">Precio Unit.</th>
+                  <th className="text-right py-2 px-2">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedInvoice.items.map((item) => (
+                  <tr key={item.id} className="border-b">
+                    <td className="py-2 px-2">{item.product?.name || 'Producto'}</td>
+                    <td className="text-center py-2 px-2">{item.quantity}</td>
+                    <td className="text-right py-2 px-2">${item.unitPrice.toFixed(2)}</td>
+                    <td className="text-right py-2 px-2 font-semibold">${item.subtotal.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Totales */}
+            <div className="flex justify-end mb-6">
+              <div className="w-64">
+                <div className="flex justify-between py-1 text-sm">
+                  <span>Subtotal:</span>
+                  <span>${selectedInvoice.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between py-1 text-sm">
+                  <span>IVA (16%):</span>
+                  <span>${selectedInvoice.tax.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-t-2 border-black font-bold text-lg">
+                  <span>TOTAL:</span>
+                  <span>${selectedInvoice.total.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Notas */}
+            {selectedInvoice.notes && (
+              <div className="mb-6 p-3 bg-gray-50 border border-gray-300">
+                <p className="text-sm"><strong>Notas:</strong> {selectedInvoice.notes}</p>
+              </div>
+            )}
+
+            {/* Pie de Página */}
+            <div className="text-center text-sm border-t pt-4 mt-8">
+              <p>¡Gracias por su compra!</p>
+              <p className="text-xs mt-2 text-gray-600">Esta factura fue generada electrónicamente</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .print-invoice-list,
+          .print-invoice-list * {
+            visibility: visible;
+          }
+          .print-invoice-list {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            display: block !important;
+          }
+          @page {
+            margin: 1cm;
+          }
+        }
+      `}</style>
     </div>
   )
 }

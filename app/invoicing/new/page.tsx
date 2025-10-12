@@ -3,15 +3,18 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, Printer, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useInvoices } from "@/hooks/use-invoices"
 import { productsService } from "@/lib/services"
-import type { Product } from "@/lib/types"
+import type { Product, InvoiceWithItems } from "@/lib/types"
 import { useRouter } from "next/navigation"
 
 interface CartItem {
@@ -20,7 +23,7 @@ interface CartItem {
 }
 
 export default function NewInvoicePage() {
-  const { createInvoice, completeInvoice } = useInvoices()
+  const { createInvoice, completeInvoice, getInvoiceById } = useInvoices()
   const [cart, setCart] = useState<CartItem[]>([])
   const [barcode, setBarcode] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -28,6 +31,8 @@ export default function NewInvoicePage() {
   const [customerPhone, setCustomerPhone] = useState("")
   const [customerEmail, setCustomerEmail] = useState("")
   const [notes, setNotes] = useState("")
+  const [completedInvoice, setCompletedInvoice] = useState<InvoiceWithItems | null>(null)
+  const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false)
   const barcodeInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
   const router = useRouter()
@@ -123,22 +128,32 @@ export default function NewInvoicePage() {
       // Completar la factura automáticamente (descuenta stock)
       await completeInvoice(invoice.id)
 
+      // Obtener los detalles completos de la factura
+      const invoiceDetails = await getInvoiceById(invoice.id)
+
       toast({
         title: "Éxito",
-        description: "Factura creada y completada correctamente",
+        description: "Factura creada correctamente. Preparando impresión...",
       })
 
-      setCart([])
-      setCustomerName("")
-      setCustomerPhone("")
-      setCustomerEmail("")
-      setNotes("")
-      barcodeInputRef.current?.focus()
+      // Mostrar la factura para impresión
+      setCompletedInvoice(invoiceDetails)
       
-      // Redirigir a la lista de facturas después de 1 segundo
+      // Esperar un momento para que se renderice el contenido
       setTimeout(() => {
-        router.push('/invoicing/list')
-      }, 1000)
+        window.print()
+        
+        // Limpiar después de cerrar el dialog de impresión
+        setTimeout(() => {
+          setCompletedInvoice(null)
+          setCart([])
+          setCustomerName("")
+          setCustomerPhone("")
+          setCustomerEmail("")
+          setNotes("")
+          barcodeInputRef.current?.focus()
+        }, 500)
+      }, 300)
     } catch (err: any) {
       toast({
         title: "Error",
@@ -149,6 +164,7 @@ export default function NewInvoicePage() {
       setSubmitting(false)
     }
   }
+
 
   return (
     <div className="p-8">
@@ -278,6 +294,124 @@ export default function NewInvoicePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Factura para Imprimir */}
+      {completedInvoice && (
+        <div className="print-invoice hidden print:block fixed inset-0 bg-white z-50">
+          <div className="max-w-4xl mx-auto p-8">
+            {/* Encabezado de la Empresa */}
+            <div className="text-center mb-8 border-b-2 border-black pb-4">
+              <h1 className="text-3xl font-bold">Juanita Deco</h1>
+              <p className="text-sm mt-1">Artículos de Decoración</p>
+            </div>
+
+            {/* Información de la Factura */}
+            <div className="grid grid-cols-2 gap-8 mb-6">
+              <div>
+                <h2 className="font-bold text-lg mb-2">FACTURA</h2>
+                <p className="text-sm"><strong>Número:</strong> {completedInvoice.invoiceNumber}</p>
+                <p className="text-sm"><strong>Fecha:</strong> {new Date(completedInvoice.createdAt).toLocaleString('es-ES', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</p>
+              </div>
+              
+              {(completedInvoice.customerName || completedInvoice.customerPhone || completedInvoice.customerEmail) && (
+                <div className="text-right">
+                  <h3 className="font-bold mb-2">CLIENTE</h3>
+                  {completedInvoice.customerName && (
+                    <p className="text-sm"><strong>Nombre:</strong> {completedInvoice.customerName}</p>
+                  )}
+                  {completedInvoice.customerPhone && (
+                    <p className="text-sm"><strong>Teléfono:</strong> {completedInvoice.customerPhone}</p>
+                  )}
+                  {completedInvoice.customerEmail && (
+                    <p className="text-sm"><strong>Email:</strong> {completedInvoice.customerEmail}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Tabla de Productos */}
+            <table className="w-full mb-6 border-collapse">
+              <thead>
+                <tr className="border-b-2 border-black">
+                  <th className="text-left py-2 px-2">Producto</th>
+                  <th className="text-center py-2 px-2">Cantidad</th>
+                  <th className="text-right py-2 px-2">Precio Unit.</th>
+                  <th className="text-right py-2 px-2">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {completedInvoice.items.map((item, index) => (
+                  <tr key={item.id} className="border-b">
+                    <td className="py-2 px-2">{item.product?.name || 'Producto'}</td>
+                    <td className="text-center py-2 px-2">{item.quantity}</td>
+                    <td className="text-right py-2 px-2">${item.unitPrice.toFixed(2)}</td>
+                    <td className="text-right py-2 px-2 font-semibold">${item.subtotal.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Totales */}
+            <div className="flex justify-end mb-6">
+              <div className="w-64">
+                <div className="flex justify-between py-1 text-sm">
+                  <span>Subtotal:</span>
+                  <span>${completedInvoice.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between py-1 text-sm">
+                  <span>IVA (16%):</span>
+                  <span>${completedInvoice.tax.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-t-2 border-black font-bold text-lg">
+                  <span>TOTAL:</span>
+                  <span>${completedInvoice.total.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Notas */}
+            {completedInvoice.notes && (
+              <div className="mb-6 p-3 bg-gray-50 border border-gray-300">
+                <p className="text-sm"><strong>Notas:</strong> {completedInvoice.notes}</p>
+              </div>
+            )}
+
+            {/* Pie de Página */}
+            <div className="text-center text-sm border-t pt-4 mt-8">
+              <p>¡Gracias por su compra!</p>
+              <p className="text-xs mt-2 text-gray-600">Esta factura fue generada electrónicamente</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .print-invoice,
+          .print-invoice * {
+            visibility: visible;
+          }
+          .print-invoice {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            display: block !important;
+          }
+          @page {
+            margin: 1cm;
+          }
+        }
+      `}</style>
     </div>
   )
 }
