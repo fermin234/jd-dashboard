@@ -118,18 +118,20 @@ export default function BarcodesPage() {
               <div className="space-y-4">
                 <div
                   ref={barcodeRef}
-                  className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-6"
+                  className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-4 overflow-hidden"
                 >
-                  <Barcode 
-                    value={selectedProduct.barcode} 
-                    format="CODE128"
-                    width={2}
-                    height={60}
-                    displayValue={true}
-                    fontSize={14}
-                    margin={10}
-                  />
-                  <p className="mt-4 text-center text-sm font-medium">{selectedProduct.name}</p>
+                  <div className="w-full flex justify-center overflow-hidden">
+                    <Barcode 
+                      value={selectedProduct.barcode} 
+                      format="CODE128"
+                      width={1}
+                      height={50}
+                      displayValue={true}
+                      fontSize={12}
+                      margin={5}
+                    />
+                  </div>
+                  <p className="mt-4 text-center text-sm font-medium break-words w-full px-2">{selectedProduct.name}</p>
                   <p className="text-center text-lg font-bold">${selectedProduct.price.toFixed(2)}</p>
                 </div>
                 <p className="text-center text-xs text-muted-foreground">
