@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useProducts } from "@/hooks/use-products"
 import type { Product } from "@/lib/types"
+import Barcode from "react-barcode"
 
 export default function BarcodesPage() {
   const { products, loading } = useProducts()
@@ -119,44 +120,20 @@ export default function BarcodesPage() {
                   ref={barcodeRef}
                   className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-6"
                 >
-                  <svg viewBox="0 0 200 80" className="w-full" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="10" y="10" width="2" height="50" fill="black" />
-                    <rect x="15" y="10" width="4" height="50" fill="black" />
-                    <rect x="22" y="10" width="2" height="50" fill="black" />
-                    <rect x="27" y="10" width="6" height="50" fill="black" />
-                    <rect x="36" y="10" width="2" height="50" fill="black" />
-                    <rect x="41" y="10" width="4" height="50" fill="black" />
-                    <rect x="48" y="10" width="2" height="50" fill="black" />
-                    <rect x="53" y="10" width="6" height="50" fill="black" />
-                    <rect x="62" y="10" width="2" height="50" fill="black" />
-                    <rect x="67" y="10" width="4" height="50" fill="black" />
-                    <rect x="74" y="10" width="2" height="50" fill="black" />
-                    <rect x="79" y="10" width="6" height="50" fill="black" />
-                    <rect x="88" y="10" width="2" height="50" fill="black" />
-                    <rect x="93" y="10" width="4" height="50" fill="black" />
-                    <rect x="100" y="10" width="2" height="50" fill="black" />
-                    <rect x="105" y="10" width="6" height="50" fill="black" />
-                    <rect x="114" y="10" width="2" height="50" fill="black" />
-                    <rect x="119" y="10" width="4" height="50" fill="black" />
-                    <rect x="126" y="10" width="2" height="50" fill="black" />
-                    <rect x="131" y="10" width="6" height="50" fill="black" />
-                    <rect x="140" y="10" width="2" height="50" fill="black" />
-                    <rect x="145" y="10" width="4" height="50" fill="black" />
-                    <rect x="152" y="10" width="2" height="50" fill="black" />
-                    <rect x="157" y="10" width="6" height="50" fill="black" />
-                    <rect x="166" y="10" width="2" height="50" fill="black" />
-                    <rect x="171" y="10" width="4" height="50" fill="black" />
-                    <rect x="178" y="10" width="2" height="50" fill="black" />
-                    <rect x="183" y="10" width="6" height="50" fill="black" />
-                    <text x="100" y="72" textAnchor="middle" fontSize="12" fontFamily="monospace">
-                      {selectedProduct.barcode}
-                    </text>
-                  </svg>
+                  <Barcode 
+                    value={selectedProduct.barcode} 
+                    format="CODE128"
+                    width={2}
+                    height={60}
+                    displayValue={true}
+                    fontSize={14}
+                    margin={10}
+                  />
                   <p className="mt-4 text-center text-sm font-medium">{selectedProduct.name}</p>
                   <p className="text-center text-lg font-bold">${selectedProduct.price.toFixed(2)}</p>
                 </div>
                 <p className="text-center text-xs text-muted-foreground">
-                  Haz clic en "Imprimir" para imprimir este código de barras
+                  Este código de barras es único y escaneable
                 </p>
               </div>
             ) : (
@@ -168,65 +145,49 @@ export default function BarcodesPage() {
         </Card>
       </div>
 
+      {/* Código de barras para imprimir */}
+      {selectedProduct && (
+        <div className="print-barcode-area fixed inset-0 bg-white hidden print:flex items-center justify-center">
+          <div className="text-center">
+            <Barcode 
+              value={selectedProduct.barcode} 
+              format="CODE128"
+              width={3}
+              height={100}
+              displayValue={true}
+              fontSize={20}
+              margin={20}
+              background="#ffffff"
+            />
+            <p className="mt-6 text-2xl font-medium">{selectedProduct.name}</p>
+            <p className="mt-2 text-3xl font-bold">${selectedProduct.price.toFixed(2)}</p>
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
         @media print {
           body * {
             visibility: hidden;
           }
-          .print-area,
-          .print-area * {
+          .print-barcode-area,
+          .print-barcode-area * {
             visibility: visible;
           }
-          .print-area {
-            position: absolute;
+          .print-barcode-area {
+            display: flex !important;
+            position: fixed;
             left: 0;
             top: 0;
             width: 100%;
+            height: 100%;
+          }
+          @page {
+            margin: 0.5cm;
+            size: portrait;
           }
         }
       `}</style>
-
-      {selectedProduct && (
-        <div className="print-area hidden">
-          <div className="flex flex-col items-center justify-center p-8">
-            <svg viewBox="0 0 200 80" width="400" height="160" xmlns="http://www.w3.org/2000/svg">
-              <rect x="10" y="10" width="2" height="50" fill="black" />
-              <rect x="15" y="10" width="4" height="50" fill="black" />
-              <rect x="22" y="10" width="2" height="50" fill="black" />
-              <rect x="27" y="10" width="6" height="50" fill="black" />
-              <rect x="36" y="10" width="2" height="50" fill="black" />
-              <rect x="41" y="10" width="4" height="50" fill="black" />
-              <rect x="48" y="10" width="2" height="50" fill="black" />
-              <rect x="53" y="10" width="6" height="50" fill="black" />
-              <rect x="62" y="10" width="2" height="50" fill="black" />
-              <rect x="67" y="10" width="4" height="50" fill="black" />
-              <rect x="74" y="10" width="2" height="50" fill="black" />
-              <rect x="79" y="10" width="6" height="50" fill="black" />
-              <rect x="88" y="10" width="2" height="50" fill="black" />
-              <rect x="93" y="10" width="4" height="50" fill="black" />
-              <rect x="100" y="10" width="2" height="50" fill="black" />
-              <rect x="105" y="10" width="6" height="50" fill="black" />
-              <rect x="114" y="10" width="2" height="50" fill="black" />
-              <rect x="119" y="10" width="4" height="50" fill="black" />
-              <rect x="126" y="10" width="2" height="50" fill="black" />
-              <rect x="131" y="10" width="6" height="50" fill="black" />
-              <rect x="140" y="10" width="2" height="50" fill="black" />
-              <rect x="145" y="10" width="4" height="50" fill="black" />
-              <rect x="152" y="10" width="2" height="50" fill="black" />
-              <rect x="157" y="10" width="6" height="50" fill="black" />
-              <rect x="166" y="10" width="2" height="50" fill="black" />
-              <rect x="171" y="10" width="4" height="50" fill="black" />
-              <rect x="178" y="10" width="2" height="50" fill="black" />
-              <rect x="183" y="10" width="6" height="50" fill="black" />
-              <text x="100" y="72" textAnchor="middle" fontSize="12" fontFamily="monospace">
-                {selectedProduct.barcode}
-              </text>
-            </svg>
-            <p className="mt-4 text-center text-xl font-medium">{selectedProduct.name}</p>
-            <p className="text-center text-2xl font-bold">${selectedProduct.price.toFixed(2)}</p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
