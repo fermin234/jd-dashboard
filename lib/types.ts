@@ -2,14 +2,16 @@
 export interface Category {
   id: string
   name: string
-  description: string | null
+  imageUrl: string | null
+  products?: Product[] | [] // Puede ser array vacío
   createdAt: string
   updatedAt: string
 }
 
 export interface CreateCategoryDto {
   name: string
-  description?: string
+  imageUrl?: string
+  products?: Product[]
 }
 
 // Product types
@@ -18,13 +20,14 @@ export interface Product {
   name: string
   barcode: string
   description: string | null
-  price: number
+  price: number | string // Puede venir como string del backend
   stock: number
   categoryId?: string | null
   imageUrl: string | null
+  galery: string[] | null // Puede ser null del backend
   createdAt: string
   updatedAt: string
-  category?: Category
+  category?: Category | null // Puede ser null del backend
 }
 
 export interface CreateProductDto {
@@ -34,6 +37,7 @@ export interface CreateProductDto {
   stock?: number
   categoryId?: string
   imageUrl?: string
+  galery?: string[]
 }
 
 export interface UpdateProductDto {
@@ -43,6 +47,7 @@ export interface UpdateProductDto {
   stock?: number
   categoryId?: string
   imageUrl?: string
+  galery?: string[]
 }
 
 export interface UpdateStockDto {

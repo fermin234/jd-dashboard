@@ -41,7 +41,7 @@ export default function ProductsPage() {
 
   const [categoryFormData, setCategoryFormData] = useState({
     name: "",
-    description: "",
+    imageUrl: "",
   })
 
   useEffect(() => {
@@ -179,7 +179,7 @@ export default function ProductsPage() {
     try {
       const newCategory = await createCategory({
         name: categoryFormData.name,
-        description: categoryFormData.description || undefined,
+        imageUrl: categoryFormData.imageUrl || undefined,
       })
 
       toast({
@@ -191,7 +191,7 @@ export default function ProductsPage() {
       setFormData({ ...formData, categoryId: newCategory.id })
       
       setIsQuickCategoryOpen(false)
-      setCategoryFormData({ name: "", description: "" })
+      setCategoryFormData({ name: "", imageUrl: "" })
       await fetchCategories()
     } catch (err: any) {
       toast({
@@ -280,7 +280,7 @@ export default function ProductsPage() {
                       <SelectValue placeholder="Selecciona una categoría" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.length === 0 ? (
+                      {!categories || categories.length === 0 ? (
                         <div className="p-2 text-sm text-muted-foreground text-center">
                           No hay categorías. Crea una nueva.
                         </div>
@@ -370,7 +370,7 @@ export default function ProductsPage() {
                       <TableCell className="font-mono">{product.barcode}</TableCell>
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell>{product.category?.name || "-"}</TableCell>
-                      <TableCell>${product.price.toFixed(2)}</TableCell>
+                      <TableCell>${Number(product.price).toFixed(2)}</TableCell>
                       <TableCell>{product.stock}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -446,7 +446,7 @@ export default function ProductsPage() {
                     <SelectValue placeholder="Selecciona una categoría" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.length === 0 ? (
+                    {!categories || categories.length === 0 ? (
                       <div className="p-2 text-sm text-muted-foreground text-center">
                         No hay categorías. Crea una nueva.
                       </div>
@@ -511,13 +511,13 @@ export default function ProductsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="quick-category-description">Descripción</Label>
-              <Textarea
-                id="quick-category-description"
-                value={categoryFormData.description}
-                onChange={(e) => setCategoryFormData({ ...categoryFormData, description: e.target.value })}
-                placeholder="Descripción de la categoría (opcional)"
-                rows={2}
+              <Label htmlFor="quick-category-imageUrl">URL de Imagen</Label>
+              <Input
+                id="quick-category-imageUrl"
+                type="url"
+                value={categoryFormData.imageUrl}
+                onChange={(e) => setCategoryFormData({ ...categoryFormData, imageUrl: e.target.value })}
+                placeholder="https://ejemplo.com/categoria.jpg (opcional)"
               />
             </div>
             <div className="flex justify-end gap-2">

@@ -12,13 +12,29 @@ export function useProducts() {
       setLoading(true)
       setError(null)
       const data = await productsService.getAll()
+      
+      // Validar que data sea un array
+      if (!Array.isArray(data)) {
+        console.warn('La respuesta de productos no es un array:', data)
+        setProducts([])
+        // No establecer error si es undefined/null (podría ser carga inicial)
+        if (data !== undefined && data !== null) {
+          setError('Error al cargar los productos: respuesta inválida del servidor')
+        }
+        return
+      }
+      
       // Convertir el precio de string a number si es necesario
       const productsWithParsedPrice = data.map(product => ({
         ...product,
-        price: typeof product.price === 'string' ? parseFloat(product.price) : product.price
+        price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+        galery: product.galery || [], // Asegurar que sea un array
+        category: product.category || null, // Asegurar que sea null si no existe
       }))
       setProducts(productsWithParsedPrice)
     } catch (err: any) {
+      console.error('Error al cargar productos:', err)
+      setProducts([])
       setError(err.message || 'Error al cargar los productos')
     } finally {
       setLoading(false)
@@ -34,7 +50,9 @@ export function useProducts() {
       const newProduct = await productsService.create(data)
       const productWithParsedPrice = {
         ...newProduct,
-        price: typeof newProduct.price === 'string' ? parseFloat(newProduct.price) : newProduct.price
+        price: typeof newProduct.price === 'string' ? parseFloat(newProduct.price) : newProduct.price,
+        galery: newProduct.galery || [],
+        category: newProduct.category || null,
       }
       setProducts([...products, productWithParsedPrice])
       return productWithParsedPrice
@@ -49,7 +67,9 @@ export function useProducts() {
       const updatedProduct = await productsService.update(id, data)
       const productWithParsedPrice = {
         ...updatedProduct,
-        price: typeof updatedProduct.price === 'string' ? parseFloat(updatedProduct.price) : updatedProduct.price
+        price: typeof updatedProduct.price === 'string' ? parseFloat(updatedProduct.price) : updatedProduct.price,
+        galery: updatedProduct.galery || [],
+        category: updatedProduct.category || null,
       }
       setProducts(products.map(p => p.id === id ? productWithParsedPrice : p))
       return productWithParsedPrice
@@ -64,7 +84,9 @@ export function useProducts() {
       const updatedProduct = await productsService.updateStock(id, { quantity })
       const productWithParsedPrice = {
         ...updatedProduct,
-        price: typeof updatedProduct.price === 'string' ? parseFloat(updatedProduct.price) : updatedProduct.price
+        price: typeof updatedProduct.price === 'string' ? parseFloat(updatedProduct.price) : updatedProduct.price,
+        galery: updatedProduct.galery || [],
+        category: updatedProduct.category || null,
       }
       setProducts(products.map(p => p.id === id ? productWithParsedPrice : p))
       return productWithParsedPrice
@@ -89,7 +111,9 @@ export function useProducts() {
       const product = await productsService.getByBarcode(code)
       return {
         ...product,
-        price: typeof product.price === 'string' ? parseFloat(product.price) : product.price
+        price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+        galery: product.galery || [],
+        category: product.category || null,
       }
     } catch (err: any) {
       setError(err.message || 'Error al buscar el producto')

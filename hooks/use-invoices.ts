@@ -12,6 +12,18 @@ export function useInvoices() {
       setLoading(true)
       setError(null)
       const data = await invoicesService.getAll()
+      
+      // Validar que data sea un array
+      if (!Array.isArray(data)) {
+        console.warn('La respuesta de facturas no es un array:', data)
+        setInvoices([])
+        // No establecer error si es undefined/null (podría ser carga inicial)
+        if (data !== undefined && data !== null) {
+          setError('Error al cargar las facturas: respuesta inválida del servidor')
+        }
+        return
+      }
+      
       // Convertir precios de string a number si es necesario
       const invoicesWithParsedPrices = data.map(invoice => ({
         ...invoice,
@@ -30,6 +42,8 @@ export function useInvoices() {
       }))
       setInvoices(invoicesWithParsedPrices)
     } catch (err: any) {
+      console.error('Error al cargar facturas:', err)
+      setInvoices([])
       setError(err.message || 'Error al cargar las facturas')
     } finally {
       setLoading(false)
