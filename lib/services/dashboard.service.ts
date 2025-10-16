@@ -25,8 +25,8 @@ export const dashboardService = {
         lowStockProducts: Number(stats.lowStockProducts),
       }
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error)
-      throw error
+      console.error('Error al obtener estadísticas del dashboard:', error)
+      throw new Error('No se pudieron cargar las estadísticas del dashboard')
     }
   },
 }
