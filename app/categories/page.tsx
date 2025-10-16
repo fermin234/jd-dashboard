@@ -41,7 +41,6 @@ export default function CategoriesPage() {
       await createCategory({
         name: formData.name,
         imageUrl: formData.imageUrl || undefined,
-        products: formData.products || [],
       })
 
       toast({
@@ -74,7 +73,6 @@ export default function CategoriesPage() {
       await updateCategory(editingCategory.id, {
         name: formData.name,
         imageUrl: formData.imageUrl || undefined,
-        products: formData.products || [],
       })
 
       toast({

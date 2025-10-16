@@ -11,7 +11,6 @@ export interface Category {
 export interface CreateCategoryDto {
   name: string
   imageUrl?: string
-  products?: Product[]
 }
 
 // Product types
