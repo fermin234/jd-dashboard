@@ -12,8 +12,22 @@ export function useCategories() {
       setLoading(true)
       setError(null)
       const data = await categoriesService.getAll()
+      
+      // Validar que data sea un array
+      if (!Array.isArray(data)) {
+        console.warn('La respuesta de categorías no es un array:', data)
+        setCategories([])
+        // No establecer error si es undefined/null (podría ser carga inicial)
+        if (data !== undefined && data !== null) {
+          setError('Error al cargar las categorías: respuesta inválida del servidor')
+        }
+        return
+      }
+      
       setCategories(data)
     } catch (err: any) {
+      console.error('Error al cargar categorías:', err)
+      setCategories([])
       setError(err.message || 'Error al cargar las categorías')
     } finally {
       setLoading(false)

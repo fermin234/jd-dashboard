@@ -23,9 +23,14 @@ export default function CategoriesPage() {
   const [submitting, setSubmitting] = useState(false)
   const { toast } = useToast()
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string
+    imageUrl: string
+    products: Category['products']
+  }>({
     name: "",
-    description: "",
+    imageUrl: "",
+    products: [],
   })
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -35,7 +40,8 @@ export default function CategoriesPage() {
     try {
       await createCategory({
         name: formData.name,
-        description: formData.description || undefined,
+        imageUrl: formData.imageUrl || undefined,
+        products: formData.products || [],
       })
 
       toast({
@@ -45,7 +51,8 @@ export default function CategoriesPage() {
       setIsCreateOpen(false)
       setFormData({
         name: "",
-        description: "",
+        imageUrl: "",
+        products: [],
       })
     } catch (err: any) {
       toast({
@@ -66,7 +73,8 @@ export default function CategoriesPage() {
     try {
       await updateCategory(editingCategory.id, {
         name: formData.name,
-        description: formData.description || undefined,
+        imageUrl: formData.imageUrl || undefined,
+        products: formData.products || [],
       })
 
       toast({
@@ -108,7 +116,8 @@ export default function CategoriesPage() {
     setEditingCategory(category)
     setFormData({
       name: category.name,
-      description: category.description || "",
+      imageUrl: category.imageUrl || "",
+      products: category.products || [],
     })
     setIsEditOpen(true)
   }
@@ -151,12 +160,12 @@ export default function CategoriesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Descripción</Label>
+                <Label htmlFor="imageUrl">Image URL *</Label>
                 <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe esta categoría..."
+                  id="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="URL de la imagen de la categoría..."
                   rows={3}
                 />
               </div>
@@ -178,14 +187,14 @@ export default function CategoriesPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Todas las Categorías</h2>
             <div className="text-sm text-muted-foreground">
-              {categories.length} {categories.length === 1 ? 'categoría' : 'categorías'}
+              {Array.isArray(categories) ? categories.length : 0} {Array.isArray(categories) && categories.length === 1 ? 'categoría' : 'categorías'}
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="text-center py-8">Cargando categorías...</div>
-          ) : categories.length === 0 ? (
+          ) : !Array.isArray(categories) || categories.length === 0 ? (
             <div className="text-center py-12">
               <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No hay categorías</h3>
@@ -210,7 +219,7 @@ export default function CategoriesPage() {
                   <TableRow key={category.id}>
                     <TableCell className="font-medium">{category.name}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {category.description || "-"}
+                      {category.imageUrl || "-"}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(category.createdAt).toLocaleDateString()}
@@ -253,11 +262,11 @@ export default function CategoriesPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Descripción</Label>
+              <Label htmlFor="edit-imageUrl">Image URL *</Label>
               <Textarea
-                id="edit-description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                id="edit-imageUrl"
+                value={formData.imageUrl}
+                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                 rows={3}
               />
             </div>
