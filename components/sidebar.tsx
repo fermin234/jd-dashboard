@@ -55,22 +55,31 @@ export function Sidebar() {
     )
   }
 
-  const isInvoicingActive = pathname.startsWith('/invoicing')
+  const isInvoicingActive = pathname.startsWith("/invoicing")
 
   return (
     <div className="flex h-screen w-64 flex-col border-r border-border bg-sidebar">
-      <div className="flex h-16 items-center border-b border-sidebar-border px-6">
-        <h1 className="text-xl font-bold text-sidebar-foreground">Juanita Deco</h1>
+      {/* Header con logo y nombre */}
+      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
+        <img
+          src="/logo-OK-Juanita-Deco-2-100x100.png"
+          alt="Logo Juanita Deco"
+          className="h-8 w-8 object-contain rounded-full"
+        />
+        <h1 className="text-lg font-bold text-sidebar-foreground">Juanita Deco</h1>
       </div>
+
+      {/* Navegación */}
       <nav className="flex-1 space-y-1 p-4">
         {menuItems.map((item) => {
           const Icon = item.icon
-          
-          // Si el item tiene subItems
+
           if (item.subItems) {
             const isExpanded = expandedItems.includes(item.title)
-            const hasActiveSubItem = item.subItems.some(subItem => pathname === subItem.href)
-            
+            const hasActiveSubItem = item.subItems.some(
+              (subItem) => pathname === subItem.href
+            )
+
             return (
               <div key={item.title}>
                 <button
@@ -93,7 +102,7 @@ export function Sidebar() {
                     )}
                   />
                 </button>
-                
+
                 {isExpanded && (
                   <div className="ml-4 mt-1 space-y-1 border-l-2 border-sidebar-border pl-4">
                     {item.subItems.map((subItem) => {
@@ -120,8 +129,7 @@ export function Sidebar() {
               </div>
             )
           }
-          
-          // Items normales sin subItems
+
           const isActive = pathname === item.href
           return (
             <Link

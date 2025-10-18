@@ -9,9 +9,15 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Dashboard - Mi Tienda",
+  title: "Dashboard - Juanita Deco",
   description: "Sistema de gestión para tienda física",
   generator: "v0.app",
+  icons: [
+    {
+      url: "/logo-OK-Juanita-Deco-2-100x100.png",
+      rel: "icon"
+    }
+  ],
 }
 
 export default function RootLayout({
