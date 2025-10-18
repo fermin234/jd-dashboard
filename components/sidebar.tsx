@@ -62,11 +62,10 @@ export function Sidebar() {
       {/* Header con logo y nombre */}
       <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
         <img
-          src="/logo-OK-Juanita-Deco-2-100x100.png"
+          src="/logo-OK-Juanita-Deco-2.png"
           alt="Logo Juanita Deco"
-          className="h-8 w-8 object-contain rounded-full"
+          className="h-15 w-30 object-contain rounded-full"
         />
-        <h1 className="text-lg font-bold text-sidebar-foreground">Juanita Deco</h1>
       </div>
 
       {/* Navegación */}

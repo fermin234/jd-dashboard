@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   generator: "v0.app",
   icons: [
     {
-      url: "/logo-OK-Juanita-Deco-2-100x100.png",
+      url: "/logo-OK-Juanita-Deco-3.png",
       rel: "icon"
     }
   ],
